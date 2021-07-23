@@ -1,6 +1,7 @@
 from rest_framework import viewsets
-from django.core.exceptions import PermissionDenied
+from rest_framework.permissions import IsAuthenticated
 
+from api.permissions import IsOwnerOrReadOnly
 from posts.models import Post, Comment, Group
 from posts.serializers import (
     PostSerializer,
@@ -10,45 +11,30 @@ from posts.serializers import (
 
 
 class PostViewSet(viewsets.ModelViewSet):
+    """Вьюсет для постов."""
+    permission_classes = (IsOwnerOrReadOnly, IsAuthenticated)
     queryset = Post.objects.all()
     serializer_class = PostSerializer
-
-    def perform_update(self, serializer):
-        if serializer.instance.author != self.request.user:
-            raise PermissionDenied('Изменение чужого контента запрещено!')
-        super().perform_update(serializer)
-
-    def perform_destroy(self, instance):
-        if instance.author != self.request.user:
-            raise PermissionDenied('Удаление чужого контента запрещено!')
-        super().perform_destroy(instance)
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
 
 class GroupViewSet(viewsets.ReadOnlyModelViewSet):
+    """Вьюсет для групп."""
     queryset = Group.objects.all()
     serializer_class = GroupSerializer
 
 
 class CommentViewSet(viewsets.ModelViewSet):
+    """Вьюсет для комментариев."""
+    permission_classes = (IsOwnerOrReadOnly, IsAuthenticated)
     serializer_class = CommentSerializer
 
     def get_queryset(self):
         return Comment.objects.filter(
             post=self.kwargs['post_id']
         )
-
-    def perform_update(self, serializer):
-        if serializer.instance.author != self.request.user:
-            raise PermissionDenied('Изменение чужого контента запрещено!')
-        super().perform_update(serializer)
-
-    def perform_destroy(self, instance):
-        if instance.author != self.request.user:
-            raise PermissionDenied('Удаление чужого контента запрещено!')
-        super().perform_destroy(instance)
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
