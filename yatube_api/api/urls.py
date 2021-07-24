@@ -2,6 +2,7 @@ from django.urls.conf import include
 from django.urls import path
 from rest_framework.authtoken import views
 from rest_framework.routers import SimpleRouter
+
 from api.views import PostViewSet, CommentViewSet, GroupViewSet
 
 router = SimpleRouter()

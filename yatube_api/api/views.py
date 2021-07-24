@@ -2,7 +2,7 @@ from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
 
 from api.permissions import IsOwnerOrReadOnly
-from posts.models import Post, Comment, Group
+from posts.models import Post, Group
 from posts.serializers import (
     PostSerializer,
     CommentSerializer,
@@ -32,9 +32,8 @@ class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
 
     def get_queryset(self):
-        return Comment.objects.filter(
-            post=self.kwargs['post_id']
-        )
+        post = Post.objects.get(id=self.kwargs['post_id'])
+        return post.comments
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
